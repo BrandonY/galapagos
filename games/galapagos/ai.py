@@ -62,12 +62,46 @@ class AI(BaseAI):
         """
         # replace with your end logic
 
+    def dist(self, tile1, tile2):
+      return abs(tile1.x - tile2.x) + abs(tile1.y - tile2.y)
+
+    def find_nearest_plant(self, tile):
+      all_plants = [p for p in self.game.plants if p.tile]
+      best_plant = None
+      best_dist = 9999
+      for plant in all_plants:
+        # A plant needs to be close, but it's also nice if it's big.
+        plant_dist = self.dist(tile, plant.tile)*2 - plant.size
+        if plant_dist < best_dist:
+          best_dist = plant_dist
+          best_plant = plant
+      return best_plant
+
+    def seek_plant(self, creature):
+      nearest_plant = self.find_nearest_plant(creature.tile)
+      path_to_plant = self.find_path(creature.tile, nearest_plant.tile)
+      while creature.movement_left and len(path_to_plant) > 1:
+        creature.move(path_to_plant.pop(0))
+
+      if nearest_plant and len(path_to_plant) == 1 and creature.can_bite:
+        # Would eating be helpful?
+        room_in_stomach = creature.max_health - creature.current_health
+        benefit_to_eating = creature.herbivorism*5
+        eating_kills_plant = nearest_plant.size == 1
+
+        if room_in_stomach and not eating_kills_plant:
+          creature.bite(path_to_plant.pop())
+
     def run_turn(self) -> bool:
         """This is called every time it is this AI.player's turn.
 
         Returns:
             bool: Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.
         """
+        my_creatures = [c for c in self.player.creatures if c.tile]
+        for creature in my_creatures:
+          self.seek_plant(creature)
+
         # Put your game logic here for runTurn
         return True
 
