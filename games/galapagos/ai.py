@@ -42,12 +42,12 @@ class AI(BaseAI):
         for my_creature in my_creatures: 
             min_dist = 922337203685477580
             for opp_creature in opponent_creatures:
-                possible_path = self.find_path(my_creature.tile, opp_creature.tile
-                if(len(possible_path) < min_dist):
-                    min_dist = len(possible_path)
-                    possible_prey[my_creature] = (opp_creature, possible_path)
-                else:
-                    continue
+              possible_path = self.find_path(my_creature.tile, opp_creature.tile)
+              if len(possible_path) < min_dist:
+                  min_dist = len(possible_path)
+                  possible_prey[my_creature] = (opp_creature, possible_path)
+              else:
+                  continue
         
         return possible_prey
 
