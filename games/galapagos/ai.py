@@ -34,19 +34,33 @@ class AI(BaseAI):
         my_creatures = self.player.creatures
         opponent_creatures = []
         for c in self.game.creatures:
-            if c not in my_creatures and not c.is_egg:
+            if c not in my_creatures and c != None and not c.is_egg:
                 opponent_creatures.append(c)
 
-        possible_prey = None
+        possible_prey = {} # {prey : (dist, health)}
         # find the nearest creature to bite
         min_dist = 922337203685477580
         for opp_creature in opponent_creatures:
-            possible_path = self.find_path(my_creature.tile, opp_creature.tile)
-            if len(possible_path) < min_dist:
-                min_dist = len(possible_path)
-                possible_prey = opp_creature
+            d = self.dist(my_creature.tile, opp_creature.tile)
+            possible_prey[opp_creature] = (d, opp_creature.current_health)
+            if d < min_dist:
+                min_dist = d
+                best_prey = opp_creature
 
-        return possible_prey
+        best_dist = 922337203685477580
+        best_health = 922337203685477580
+        best_prey = None
+
+        for prey in possible_prey:
+            curr_dist = possible_prey[prey][0]
+            curr_health = possible_prey[prey][1]
+            is_prey_better = (curr_dist < best_dist or (curr_dist == best_dist and curr_health < best_health))
+            if is_prey_better:
+                best_dist = curr_dist
+                best_health = curr_health
+                best_prey = prey
+
+        return best_prey
 
     def bite_prey(self, my_creature) -> None:
         # go bite the creatures
@@ -55,7 +69,10 @@ class AI(BaseAI):
         if path:
           while my_creature.movement_left and len(path) > 1:
               my_creature.move(path.pop(0))
-          my_creature.bite(path.pop())
+              path = self.find_path(my_creature.tile, prey.tile)
+
+          if prey and len(path) == 1 and my_creature.can_bite:
+              my_creature.bite(path.pop())
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
