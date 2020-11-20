@@ -28,20 +28,19 @@ class AI(BaseAI):
         return "The Beagles"
 
     def carnivorize(self) -> None:
-        g = self.game()
-        p = self.player()
-        my_creatures = p.creatures()
+        g = self.game
+        p = self.player
+        my_creatures = p.creatures
         opponent_creatures = []
-        for c in g.creatures():
+        for c in g.creatures:
             if c not in my_creatures:
                 opponent_creatures.append(c)
 
-        for my_creature in my_creatures: 
+        for my_creature in my_creatures:
             for opp_creature in opponent_creatures:
-                if find_path(my_creature.tile(), opp_creature.tile()).__len__() <= my_creature.speed():
-                    my_creature.bite(opp_creature)
+              if len(self.find_path(my_creature.tile, opp_creature.tile)) <= my_creature.speed:
+                    my_creature.bite(opp_creature.tile)
 
-            
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
@@ -98,9 +97,13 @@ class AI(BaseAI):
         Returns:
             bool: Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.
         """
-        my_creatures = [c for c in self.player.creatures if c.tile]
-        for creature in my_creatures:
-          self.seek_plant(creature)
+        is_player_1 = self.game.players[0] == self.player
+        if is_player_1:
+          my_creatures = [c for c in self.player.creatures if c.tile]
+          for creature in my_creatures:
+            self.seek_plant(creature)
+        else:
+          self.carnivorize()
 
         # Put your game logic here for runTurn
         return True
