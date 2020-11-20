@@ -30,7 +30,7 @@ class AI(BaseAI):
         return "The Beagles"
 
     def seek_prey(self) -> dict:
-        my_creatures = self.player.creatures()
+        my_creatures = self.player.creatures
         opponent_creatures = []
         for c in self.game.creatures():
             if c not in my_creatures:
