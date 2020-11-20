@@ -71,6 +71,8 @@ class AI(BaseAI):
         if path:
           while my_creature.movement_left and len(path) > 1:
               my_creature.move(path.pop(0))
+              if my_creature is None or prey is None:
+                return
               path = self.find_path(my_creature.tile, prey.tile)
 
           if prey and len(path) == 1 and my_creature.can_bite:
