@@ -48,13 +48,19 @@ class AI(BaseAI):
         return possible_prey
 
     def bite_creature(self) -> None:
-        # go bite the creature
-        possible_path = self.find_path(my_creature.tile(), opp_creature.tile())
-        if possible_path.__len__() <= my_creature.speed():
-            my_creature.bite(opp_creature)
-        else:
-            for tile in possible_path:
-                my_creature.move(tile)
+        # go bite the creatures
+        prey = self.seek_prey()
+        for my_creature in prey.keys():
+            opp_creature = prey[my_creature][0]
+            path = prey[my_creature][1]
+            place_to_go = None
+            if (len(path) <= speed-1):
+                my_creature.move(path[-2])
+                my_creature.bite(path[-1])
+                continue
+            for i in range(0,speed-1):
+                path.pop()
+            my_creature.move(path[-1])
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
