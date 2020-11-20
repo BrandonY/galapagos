@@ -30,34 +30,6 @@ class AI(BaseAI):
         """
         return "The Beagles"
 
-    def find_nearest_plant(self, tile):
-      all_plants = [p for p in self.game.plants if p.tile]
-      best_plant = None
-      best_dist = 9999
-      for plant in all_plants:
-        # A plant needs to be close, but it's also nice if it's big.
-        plant_dist = self.dist(tile, plant.tile)*2 - plant.size
-        if plant_dist < best_dist:
-          best_dist = plant_dist
-          best_plant = plant
-      return best_plant
-
-    def seek_plant(self, creature):
-      nearest_plant = self.find_nearest_plant(creature.tile)
-      path_to_plant = self.find_path(creature.tile, nearest_plant.tile)
-      while creature.movement_left and len(path_to_plant) > 1:
-        creature.move(path_to_plant.pop(0))
-
-      if nearest_plant and len(path_to_plant) == 1 and creature.can_bite:
-        # Would eating be helpful?
-        room_in_stomach = creature.max_health - creature.current_health
-        benefit_to_eating = creature.herbivorism*5
-        eating_kills_plant = nearest_plant.size == 1
-
-        if room_in_stomach and not eating_kills_plant:
-          creature.bite(path_to_plant.pop())
-
-
     def find_nearest_prey(self, my_creature):
         my_creatures = self.player.creatures
         opponent_creatures = []
@@ -67,24 +39,12 @@ class AI(BaseAI):
 
         possible_prey = None
         # find the nearest creature to bite
-<<<<<<< HEAD
         min_dist = 922337203685477580
         for opp_creature in opponent_creatures:
             possible_path = self.find_path(my_creature.tile, opp_creature.tile)
             if len(possible_path) < min_dist:
                 min_dist = len(possible_path)
                 possible_prey = opp_creature
-=======
-        for my_creature in my_creatures: 
-            min_dist = 922337203685477580
-            for opp_creature in opponent_creatures:
-              possible_path = self.find_path(my_creature.tile, opp_creature.tile)
-              if len(possible_path) < min_dist:
-                  min_dist = len(possible_path)
-                  possible_prey[my_creature] = (opp_creature, possible_path)
-              else:
-                  continue
->>>>>>> c90eff8163f969fd1933ccd2c31bbe3c63765491
         
         return possible_prey
 
