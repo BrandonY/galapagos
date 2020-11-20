@@ -32,18 +32,21 @@ class AI(BaseAI):
     def seek_prey(self) -> dict:
         my_creatures = self.player.creatures
         opponent_creatures = []
-        for c in self.game.creatures():
+        for c in self.game.creatures:
             if c not in my_creatures:
                 opponent_creatures.append(c)
 
         possible_prey = {}
         # find the nearest creature to bite
         for my_creature in my_creatures: 
-            min_dist = sys.maxint
+            min_dist = 922337203685477580
             for opp_creature in opponent_creatures:
-                possible_path = self.find_path(my_creature.tile(), opp_creature.tile())
-                if len(possible_path) < min_dist:
+                possible_path = self.find_path(my_creature.tile, opp_creature.tile
+                if(len(possible_path) < min_dist):
+                    min_dist = len(possible_path)
                     possible_prey[my_creature] = (opp_creature, possible_path)
+                else:
+                    continue
         
         return possible_prey
 
@@ -54,11 +57,11 @@ class AI(BaseAI):
             opp_creature = prey[my_creature][0]
             path = prey[my_creature][1]
             place_to_go = None
-            if (len(path) <= speed-1):
+            if (len(path) <= my_creature.speed-1):
                 my_creature.move(path[-2])
                 my_creature.bite(path[-1])
                 continue
-            for i in range(0,speed-1):
+            for i in range(0,my_creature.speed-1):
                 path.pop()
             my_creature.move(path[-1])
 
