@@ -64,32 +64,20 @@ class AI(BaseAI):
     def bite_prey(self, my_creature) -> None:
         # go bite the creatures
         prey = self.find_nearest_prey(my_creature)
-        if not prey:
-          return
-        if not prey.tile:
+        if not prey or not prey.tile:
             return
 
         path = self.find_path(my_creature.tile, prey.tile)
-<<<<<<< HEAD
-        if path:
-          while my_creature.movement_left and len(path) > 1:
-              my_creature.move(path.pop(0))
-              if my_creature is None or prey is None:
-                return
-              path = self.find_path(my_creature.tile, prey.tile)
-
-          if prey and len(path) == 1 and my_creature.can_bite:
-              my_creature.bite(path.pop())
-=======
         if not path:
-          return
-        while my_creature.movement_left and len(path) >1:
-          my_creature.move(path.pop(0))
-          path = self.find_path(my_creature.tile, prey.tile)
+            return
+        while my_creature.movement_left and len(path) > 1:
+            my_creature.move(path.pop(0))
+            if my_creature is None or prey is None:
+                return
+            path = self.find_path(my_creature.tile, prey.tile)
 
         if prey and len(path) == 1 and my_creature.can_bite:
-          my_creature.bite(path.pop())
->>>>>>> 44872f4a8bb0c0e9db6b75d9feebd8be49197dc4
+            my_creature.bite(path.pop())
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
@@ -207,14 +195,26 @@ class AI(BaseAI):
         Returns:
             bool: Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.
         """
-        if self.game.current_turn < 75:
-          for creature in self.my_creatures():
-            self.seek_plant(creature)
-          self.try_to_breed()
-        else:
-          for creature in self.my_creatures():
-            self.bite_prey(creature)
-          self.try_to_breed()
+        # if self.game.current_turn < 75:
+        #   for creature in self.my_creatures():
+        #     self.seek_plant(creature)
+        #   self.try_to_breed()
+        # else:
+        #   for creature in self.my_creatures():
+        #     self.bite_prey(creature)
+        #   self.try_to_breed()
+
+        herbivores = []
+        for creature in self.my_creatures():
+            if creature.herbivorism < creature.carnivorism:
+                herbivores.append(creature)
+        
+        for creature in self.my_creatures:
+            if creature in herbivores:
+                self.seek_plant(creature)
+            else:
+                self.bite_prey(creature)
+            self.try_to_breed()
 
         # Put your game logic here for runTurn
         return True
