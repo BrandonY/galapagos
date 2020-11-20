@@ -72,9 +72,8 @@ class AI(BaseAI):
             return
         while my_creature.movement_left and len(path) > 1:
             my_creature.move(path.pop(0))
-            if my_creature is None or prey is None:
-                return
-            path = self.find_path(my_creature.tile, prey.tile)
+            if my_creature and my_creature.tile and prey and prey.tile:
+                path = self.find_path(my_creature.tile, prey.tile)
 
         if prey and len(path) == 1 and my_creature.can_bite:
             my_creature.bite(path.pop())
@@ -205,12 +204,16 @@ class AI(BaseAI):
         #   self.try_to_breed()
 
         herbivores = []
+        num_carnivores = 0
         for creature in self.my_creatures():
-            if creature.herbivorism < creature.carnivorism:
+            if(creature.herbivorism < creature.carnivorism or creature.current_health <= 3):
                 herbivores.append(creature)
+            else:
+                num_carnivores += 1
+        print("I have " + str(herbivores.__len__()) + " herbivores and " + str(num_carnivores) + " carnivores")
         
-        for creature in self.my_creatures:
-            if creature in herbivores:
+        for creature in self.my_creatures():
+            if creature in herbivores or self.my_creatures().__len__() <= 2:
                 self.seek_plant(creature)
             else:
                 self.bite_prey(creature)
