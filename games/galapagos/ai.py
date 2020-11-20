@@ -1,5 +1,7 @@
 # This is where you build your AI for the Galapagos game.
 
+import sys
+
 from typing import List
 from joueur.base_ai import BaseAI
 import itertools
@@ -28,20 +30,41 @@ class AI(BaseAI):
         """
         return "The Beagles"
 
-    def carnivorize(self) -> None:
-        g = self.game
-        p = self.player
-        my_creatures = p.creatures
+    def seek_prey(self) -> dict:
+        my_creatures = self.player.creatures
         opponent_creatures = []
-        for c in g.creatures:
+        for c in self.game.creatures:
             if c not in my_creatures:
                 opponent_creatures.append(c)
 
-        for my_creature in my_creatures:
+        possible_prey = {}
+        # find the nearest creature to bite
+        for my_creature in my_creatures: 
+            min_dist = 922337203685477580
             for opp_creature in opponent_creatures:
-              if len(self.find_path(my_creature.tile, opp_creature.tile)) <= my_creature.speed:
-                    my_creature.bite(opp_creature.tile)
+                possible_path = self.find_path(my_creature.tile, opp_creature.tile
+                if(len(possible_path) < min_dist):
+                    min_dist = len(possible_path)
+                    possible_prey[my_creature] = (opp_creature, possible_path)
+                else:
+                    continue
+        
+        return possible_prey
 
+    def bite_creatures(self) -> None:
+        # go bite the creatures
+        prey = self.seek_prey()
+        for my_creature in prey.keys():
+            opp_creature = prey[my_creature][0]
+            path = prey[my_creature][1]
+            place_to_go = None
+            if (len(path) <= my_creature.speed-1):
+                my_creature.move(path[-2])
+                my_creature.bite(path[-1])
+                continue
+            for i in range(0,my_creature.speed-1):
+                path.pop()
+            my_creature.move(path[-1])
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
@@ -146,7 +169,6 @@ class AI(BaseAI):
         if self.dist(dino1.tile, dino2.tile) == 1:
           dino1.breed(dino2)
 
-
     def run_turn(self) -> bool:
         """This is called every time it is this AI.player's turn.
 
@@ -159,7 +181,7 @@ class AI(BaseAI):
             self.seek_plant(creature)
           self.try_to_breed()
         else:
-          self.carnivorize()
+          self.bite_creatures()
 
         # Put your game logic here for runTurn
         return True
