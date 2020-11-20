@@ -4,7 +4,6 @@ from typing import List
 from joueur.base_ai import BaseAI
 
 
-
 class AI(BaseAI):
     """ The AI you add and improve code inside to play Galapagos. """
 
@@ -12,7 +11,6 @@ class AI(BaseAI):
     def game(self) -> 'games.galapagos.game.Game':
         """games.galapagos.game.Game: The reference to the Game instance this AI is playing.
         """
-        # NINA WAS HERE
         return self._game # don't directly touch this "private" variable pls
 
     @property
@@ -27,7 +25,23 @@ class AI(BaseAI):
         Returns:
             str: The name of your Player.
         """
-        return "Galapagos Python Player" # REPLACE THIS WITH YOUR TEAM NAME
+        return "The Beagles"
+
+    def carnivorize(self) -> None:
+        g = self.game()
+        p = self.player()
+        my_creatures = p.creatures()
+        opponent_creatures = []
+        for c in g.creatures():
+            if c not in my_creatures:
+                opponent_creatures.append(c)
+
+        for my_creature in my_creatures: 
+            for opp_creature in opponent_creatures:
+                if find_path(my_creature.tile(), opp_creature.tile()).__len__() <= my_creature.speed():
+                    my_creature.bite(opp_creature)
+
+            
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
