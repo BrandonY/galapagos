@@ -47,7 +47,7 @@ class AI(BaseAI):
         
         return possible_prey
 
-    def bite_creature(self) -> None:
+    def bite_creatures(self) -> None:
         # go bite the creatures
         prey = self.seek_prey()
         for my_creature in prey.keys():
@@ -118,10 +118,13 @@ class AI(BaseAI):
         Returns:
             bool: Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.
         """
-        # Put your game logic here for runTurn
-        my_creatures = [c for c in self.player.creatures if c.tile]
-        for creature in my_creatures:
-          self.seek_plant(creature)
+        is_player_1 = self.game.players[0] == self.player
+        if is_player_1:
+          my_creatures = [c for c in self.player.creatures if c.tile]
+          for creature in my_creatures:
+            self.seek_plant(creature)
+        else:
+          self.bite_creatures()
 
         # Put your game logic here for runTurn
         return True
