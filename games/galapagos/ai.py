@@ -8,22 +8,22 @@ import itertools
 
 
 class AI(BaseAI):
-    """ The AI you add and improve code inside to play Galapagos. """
+  """ The AI you add and improve code inside to play Galapagos. """
 
     @property
     def game(self) -> 'games.galapagos.game.Game':
-        """games.galapagos.game.Game: The reference to the Game instance this AI is playing.
+      """games.galapagos.game.Game: The reference to the Game instance this AI is playing.
         """
         return self._game # don't directly touch this "private" variable pls
 
     @property
     def player(self) -> 'games.galapagos.player.Player':
-        """games.galapagos.player.Player: The reference to the Player this AI controls in the Game.
+      """games.galapagos.player.Player: The reference to the Player this AI controls in the Game.
         """
         return self._player # don't directly touch this "private" variable pls
 
     def get_name(self) -> str:
-        """This is the name you send to the server so your AI will control the player named this string.
+      """This is the name you send to the server so your AI will control the player named this string.
 
         Returns:
             str: The name of your Player.
@@ -31,44 +31,44 @@ class AI(BaseAI):
         return "The Beagles"
 
     def find_nearest_prey(self, my_creature):
-        my_creatures = self.player.creatures
+      my_creatures = self.player.creatures
         opponent_creatures = []
         for c in self.game.creatures:
-            if c not in my_creatures:
-                opponent_creatures.append(c)
+          if c not in my_creatures:
+            opponent_creatures.append(c)
 
         possible_prey = None
         # find the nearest creature to bite
         min_dist = 922337203685477580
         for opp_creature in opponent_creatures:
-            possible_path = self.find_path(my_creature.tile, opp_creature.tile)
+          possible_path = self.find_path(my_creature.tile, opp_creature.tile)
             if len(possible_path) < min_dist:
-                min_dist = len(possible_path)
+              min_dist = len(possible_path)
                 possible_prey = opp_creature
-        
+
         return possible_prey
 
     def bite_prey(self, my_creature) -> None:
-        # go bite the creatures
+      # go bite the creatures
         prey = self.find_nearest_prey(my_creature)
         path = self.find_path(my_creature.tile, prey.tile)
 
         while my_creature.movement_left and len(path) > 1:
-            my_creature.move(path.pop(0))
+          my_creature.move(path.pop(0))
         my_creature.bite(path.pop())
 
     def start(self) -> None:
-        """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
+      """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
         """
         # replace with your start logic
 
     def game_updated(self) -> None:
-        """This is called every time the game's state updates, so if you are tracking anything you can update it here.
+      """This is called every time the game's state updates, so if you are tracking anything you can update it here.
         """
         # replace with your game updated logic
 
     def end(self, won: bool, reason: str) -> None:
-        """This is called when the game ends, you can clean up your data and dump files here if need be.
+      """This is called when the game ends, you can clean up your data and dump files here if need be.
 
         Args:
             won (bool): True means you won, False means you lost.
@@ -119,7 +119,7 @@ class AI(BaseAI):
           break
 
     def my_creatures(self):
-        return [c for c in self.player.creatures if c.tile]
+      return [c for c in self.player.creatures if c.tile]
 
     def eligible_to_breed(self, creature):
       """Heuristic for which dinosaur should breed."""
@@ -141,7 +141,7 @@ class AI(BaseAI):
         dinos.insert(1, dinos.pop())
 
       cycles = [c for c in [
-             [(p1, p2) for p1, p2 in c if p1 != '_' and p2 != '_']]]
+          [(p1, p2) for p1, p2 in c if p1 != '_' and p2 != '_']]]
 
       print('All possible pairings: ', cycles)
       return cycles
@@ -161,7 +161,7 @@ class AI(BaseAI):
           dino1.breed(dino2)
 
     def run_turn(self) -> bool:
-        """This is called every time it is this AI.player's turn.
+      """This is called every time it is this AI.player's turn.
 
         Returns:
             bool: Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.
@@ -181,7 +181,7 @@ class AI(BaseAI):
 
 
     def find_path(self, start: 'games.galapagos.tile.Tile', goal: 'games.galapagos.tile.Tile') -> List['games.galapagos.tile.Tile']:
-        """A very basic path finding algorithm (Breadth First Search) that when given a starting Tile, will return a valid path to the goal Tile.
+      """A very basic path finding algorithm (Breadth First Search) that when given a starting Tile, will return a valid path to the goal Tile.
 
         Args:
             start (games.galapagos.tile.Tile): The starting Tile to find a path from.
@@ -192,7 +192,7 @@ class AI(BaseAI):
         """
 
         if start == goal:
-            # no need to make a path to here...
+          # no need to make a path to here...
             return []
 
         # queue of the tiles that will have their neighbors searched for 'goal'
@@ -206,21 +206,21 @@ class AI(BaseAI):
 
         # keep exploring neighbors of neighbors... until there are no more.
         while len(fringe) > 0:
-            # the tile we are currently exploring.
+          # the tile we are currently exploring.
             inspect = fringe.pop(0)
 
             # cycle through the tile's neighbors.
             for neighbor in inspect.get_neighbors():
-                # if we found the goal, we have the path!
+              # if we found the goal, we have the path!
                 if neighbor == goal:
-                    # Follow the path backward to the start from the goal and
+                  # Follow the path backward to the start from the goal and
                     # # return it.
                     path = [goal]
 
                     # Starting at the tile we are currently at, insert them
                     # retracing our steps till we get to the starting tile
                     while inspect != start:
-                        path.insert(0, inspect)
+                      path.insert(0, inspect)
                         inspect = came_from[inspect.id]
                     return path
                 # else we did not find the goal, so enqueue this tile's
@@ -231,7 +231,7 @@ class AI(BaseAI):
                 if neighbor and neighbor.id not in came_from and (
                     neighbor.is_pathable()
                 ):
-                    # add it to the tiles to be explored and add where it came
+                  # add it to the tiles to be explored and add where it came
                     # from for path reconstruction.
                     fringe.append(neighbor)
                     came_from[neighbor.id] = inspect
