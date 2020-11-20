@@ -12,6 +12,7 @@ class AI(BaseAI):
     def game(self) -> 'games.galapagos.game.Game':
         """games.galapagos.game.Game: The reference to the Game instance this AI is playing.
         """
+        # NINA WAS HERE
         return self._game # don't directly touch this "private" variable pls
 
     @property
