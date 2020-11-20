@@ -117,6 +117,9 @@ class AI(BaseAI):
 
     def seek_plant(self, creature):
       nearest_plant = self.find_nearest_plant(creature.tile)
+      if not creature or not creature.tile or not nearest_plant or not nearest_plant.tile:
+          return
+
       path_to_plant = self.find_path(creature.tile, nearest_plant.tile)
       while creature.movement_left and len(path_to_plant) > 1:
         creature.move(path_to_plant.pop(0))
