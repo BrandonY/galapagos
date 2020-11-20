@@ -34,7 +34,7 @@ class AI(BaseAI):
         my_creatures = self.player.creatures
         opponent_creatures = []
         for c in self.game.creatures:
-            if c not in my_creatures:
+            if c not in my_creatures and not c.is_egg:
                 opponent_creatures.append(c)
 
         possible_prey = None
@@ -45,17 +45,17 @@ class AI(BaseAI):
             if len(possible_path) < min_dist:
                 min_dist = len(possible_path)
                 possible_prey = opp_creature
-        
+
         return possible_prey
 
     def bite_prey(self, my_creature) -> None:
         # go bite the creatures
         prey = self.find_nearest_prey(my_creature)
         path = self.find_path(my_creature.tile, prey.tile)
-
-        while my_creature.movement_left and len(path) > 1:
-            my_creature.move(path.pop(0))
-        my_creature.bite(path.pop())
+        if path:
+          while my_creature.movement_left and len(path) > 1:
+              my_creature.move(path.pop(0))
+          my_creature.bite(path.pop())
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
@@ -143,7 +143,6 @@ class AI(BaseAI):
       cycles = [c for c in [
              [(p1, p2) for p1, p2 in c if p1 != '_' and p2 != '_']]]
 
-      print('All possible pairings: ', cycles)
       return cycles
 
     def try_to_breed(self):
@@ -160,20 +159,23 @@ class AI(BaseAI):
         if self.dist(dino1.tile, dino2.tile) == 1:
           dino1.breed(dino2)
 
+    def would_win_in_a_fight(self):
+      """Heuristic for whether we're pretty clearly healthier than the other team."""
+      our_health
+
+
     def run_turn(self) -> bool:
         """This is called every time it is this AI.player's turn.
 
         Returns:
             bool: Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.
         """
-        is_player_1 = self.game.players[0] == self.player
-        if is_player_1:
+        if self.game.current_turn < 75:
           for creature in self.my_creatures():
             self.seek_plant(creature)
           self.try_to_breed()
         else:
-          my_creatures = [c for c in self.player.creatures if c.tile]
-          for creature in my_creatures:
+          for creature in self.my_creatures():
             self.bite_prey(creature)
 
         # Put your game logic here for runTurn
