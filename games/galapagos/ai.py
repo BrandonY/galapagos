@@ -2,6 +2,7 @@
 
 from typing import List
 from joueur.base_ai import BaseAI
+import itertools
 
 
 class AI(BaseAI):
@@ -91,6 +92,61 @@ class AI(BaseAI):
         if room_in_stomach and not eating_kills_plant:
           creature.bite(path_to_plant.pop())
 
+    def walk_towards_each_other(self, creature1, creature2):
+      while self.dist(creature1.tile, creature2.tile) > 1:
+        path = self.find_path(creature1.tile, creature2.tile)[:-1]
+        if not path:  # Could happen if dino is surrounded
+          break
+        if creature1.movement_left:
+          creature1.move(path.pop(0))
+        elif creature2.movement_left:
+          creature2.move(path.pop())
+        else:
+          break
+
+    def my_creatures(self):
+        return [c for c in self.player.creatures if c.tile]
+
+    def eligible_to_breed(self, creature):
+      """Heuristic for which dinosaur should breed."""
+
+      # Maybe also don't breed if there are baddies nearby.
+      return creature.can_breed and creature.current_health/creature.max_health > 0.8
+
+    def all_possible_pairings(self, dinos):
+      # Stolen from https://stackoverflow.com/questions/18172810/optimal-strategy-for-choosing-pairs-from-a-list-of-combinations
+      dinos = dinos.copy()
+      n = len(dinos)
+      if n % 2:
+        dinos.append('_')
+        n += 1
+      cycles = []
+      for _ in range(n-1):
+        c = list(zip(dinos[:n//2], reversed(dinos[n//2:])))
+        cycles.append(c)
+        dinos.insert(1, dinos.pop())
+
+      cycles = [c for c in [
+             [(p1, p2) for p1, p2 in c if p1 != '_' and p2 != '_']]]
+
+      print('All possible pairings: ', cycles)
+      return cycles
+
+    def try_to_breed(self):
+      eligible_dinos = [c for c in self.my_creatures() if self.eligible_to_breed(c)]
+      if len(eligible_dinos) < 2:
+        print("Not enough healthy dinos to breed")
+        return
+      possible_pairings = self.all_possible_pairings(eligible_dinos)
+
+      # TODO: some heurisitic for best pairings -- maybe distance, or health.
+
+      for dino1, dino2 in possible_pairings[0]:
+        self.walk_towards_each_other(dino1, dino2)
+        if self.dist(dino1.tile, dino2.tile) == 1:
+          dino1.breed(dino2)
+
+
     def run_turn(self) -> bool:
         """This is called every time it is this AI.player's turn.
 
@@ -99,9 +155,9 @@ class AI(BaseAI):
         """
         is_player_1 = self.game.players[0] == self.player
         if is_player_1:
-          my_creatures = [c for c in self.player.creatures if c.tile]
-          for creature in my_creatures:
+          for creature in self.my_creatures():
             self.seek_plant(creature)
+          self.try_to_breed()
         else:
           self.carnivorize()
 
