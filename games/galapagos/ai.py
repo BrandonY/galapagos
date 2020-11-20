@@ -56,7 +56,8 @@ class AI(BaseAI):
       best_plant = None
       best_dist = 9999
       for plant in all_plants:
-        plant_dist = self.dist(tile, plant.tile)
+        # A plant needs to be close, but it's also nice if it's big.
+        plant_dist = self.dist(tile, plant.tile)*2 - plant.size
         if plant_dist < best_dist:
           best_dist = plant_dist
           best_plant = plant
@@ -67,8 +68,15 @@ class AI(BaseAI):
       path_to_plant = self.find_path(creature.tile, nearest_plant.tile)
       while creature.movement_left and len(path_to_plant) > 1:
         creature.move(path_to_plant.pop(0))
+
       if nearest_plant and len(path_to_plant) == 1 and creature.can_bite:
-        creature.bite(path_to_plant.pop())
+        # Would eating be helpful?
+        room_in_stomach = creature.max_health - creature.current_health
+        benefit_to_eating = creature.herbivorism*5
+        eating_kills_plant = nearest_plant.size == 1
+
+        if room_in_stomach and not eating_kills_plant:
+          creature.bite(path_to_plant.pop())
 
     def run_turn(self) -> bool:
         """This is called every time it is this AI.player's turn.
