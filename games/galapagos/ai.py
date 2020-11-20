@@ -1,5 +1,7 @@
 # This is where you build your AI for the Galapagos game.
 
+import sys
+
 from typing import List
 from joueur.base_ai import BaseAI
 
@@ -27,21 +29,32 @@ class AI(BaseAI):
         """
         return "The Beagles"
 
-    def carnivorize(self) -> None:
-        g = self.game()
-        p = self.player()
-        my_creatures = p.creatures()
+    def seek_prey(self) -> dict:
+        my_creatures = self.player.creatures()
         opponent_creatures = []
-        for c in g.creatures():
+        for c in self.game.creatures():
             if c not in my_creatures:
                 opponent_creatures.append(c)
 
+        possible_prey = {}
+        # find the nearest creature to bite
         for my_creature in my_creatures: 
+            min_dist = sys.maxint
             for opp_creature in opponent_creatures:
-                if find_path(my_creature.tile(), opp_creature.tile()).__len__() <= my_creature.speed():
-                    my_creature.bite(opp_creature)
+                possible_path = self.find_path(my_creature.tile(), opp_creature.tile())
+                if len(possible_path) < min_dist:
+                    possible_prey[my_creature] = (opp_creature, possible_path)
+        
+        return possible_prey
 
-            
+    def bite_creature(self) -> None:
+        # go bite the creature
+        possible_path = self.find_path(my_creature.tile(), opp_creature.tile())
+        if possible_path.__len__() <= my_creature.speed():
+            my_creature.bite(opp_creature)
+        else:
+            for tile in possible_path:
+                my_creature.move(tile)
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
@@ -92,12 +105,14 @@ class AI(BaseAI):
         if room_in_stomach and not eating_kills_plant:
           creature.bite(path_to_plant.pop())
 
+
     def run_turn(self) -> bool:
         """This is called every time it is this AI.player's turn.
 
         Returns:
             bool: Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.
         """
+        # Put your game logic here for runTurn
         my_creatures = [c for c in self.player.creatures if c.tile]
         for creature in my_creatures:
           self.seek_plant(creature)
