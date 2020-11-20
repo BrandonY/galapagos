@@ -38,14 +38,10 @@ class AI(BaseAI):
                 opponent_creatures.append(c)
 
         possible_prey = {} # {prey : (dist, health)}
-        # find the nearest creature to bite
-        min_dist = 922337203685477580
         for opp_creature in opponent_creatures:
             d = self.dist(my_creature.tile, opp_creature.tile)
-            possible_prey[opp_creature] = (d, opp_creature.current_health)
-            if d < min_dist:
-                min_dist = d
-                best_prey = opp_creature
+            if (opp_creature.defense < my_creature.carnivorism):
+                possible_prey[opp_creature] = (d, opp_creature.current_health)
 
         best_dist = 922337203685477580
         best_health = 922337203685477580
@@ -54,7 +50,10 @@ class AI(BaseAI):
         for prey in possible_prey:
             curr_dist = possible_prey[prey][0]
             curr_health = possible_prey[prey][1]
-            is_prey_better = (curr_dist < best_dist or (curr_dist == best_dist and curr_health < best_health))
+            # bite the nearest creature that is also the weakest
+            # is_prey_better = (curr_dist < best_dist or (curr_dist == best_dist and curr_health < best_health))
+            # always go after the weakest creature, that is nearest
+            is_prey_better = (curr_health < best_health and curr_dist <= (best_dist*0.5))
             if is_prey_better:
                 best_dist = curr_dist
                 best_health = curr_health
@@ -65,6 +64,9 @@ class AI(BaseAI):
     def bite_prey(self, my_creature) -> None:
         # go bite the creatures
         prey = self.find_nearest_prey(my_creature)
+        if my_creature is None or prey is None:
+            return
+
         path = self.find_path(my_creature.tile, prey.tile)
 
         while my_creature.movement_left and len(path) > 1:
@@ -94,7 +96,10 @@ class AI(BaseAI):
         # replace with your end logic
 
     def dist(self, tile1, tile2):
-      return abs(tile1.x - tile2.x) + abs(tile1.y - tile2.y)
+        if (tile1 == None or tile2 == None):
+            return 922337203685477580
+        else:
+          return abs(tile1.x - tile2.x) + abs(tile1.y - tile2.y)
 
     def find_nearest_plant(self, tile):
       all_plants = [p for p in self.game.plants if p.tile]
@@ -192,6 +197,7 @@ class AI(BaseAI):
           my_creatures = [c for c in self.player.creatures if c.tile]
           for creature in my_creatures:
             self.bite_prey(creature)
+          self.try_to_breed()
 
         # Put your game logic here for runTurn
         return True
