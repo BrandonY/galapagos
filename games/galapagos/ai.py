@@ -34,7 +34,7 @@ class AI(BaseAI):
         my_creatures = self.player.creatures
         opponent_creatures = []
         for c in self.game.creatures:
-            if c not in my_creatures and c != None and not c.is_egg:
+            if c not in my_creatures and c and c.tile and not c.is_egg:
                 opponent_creatures.append(c)
 
         possible_prey = {} # {prey : (dist, health)}
@@ -64,10 +64,13 @@ class AI(BaseAI):
     def bite_prey(self, my_creature) -> None:
         # go bite the creatures
         prey = self.find_nearest_prey(my_creature)
-        if my_creature is None or prey is None:
+        if not prey:
+          return
+        if not prey.tile:
             return
 
         path = self.find_path(my_creature.tile, prey.tile)
+<<<<<<< HEAD
         if path:
           while my_creature.movement_left and len(path) > 1:
               my_creature.move(path.pop(0))
@@ -77,6 +80,16 @@ class AI(BaseAI):
 
           if prey and len(path) == 1 and my_creature.can_bite:
               my_creature.bite(path.pop())
+=======
+        if not path:
+          return
+        while my_creature.movement_left and len(path) >1:
+          my_creature.move(path.pop(0))
+          path = self.find_path(my_creature.tile, prey.tile)
+
+        if prey and len(path) == 1 and my_creature.can_bite:
+          my_creature.bite(path.pop())
+>>>>>>> 44872f4a8bb0c0e9db6b75d9feebd8be49197dc4
 
     def start(self) -> None:
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
