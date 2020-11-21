@@ -180,16 +180,25 @@ class AI(BaseAI):
 
       return cycles
 
+    def score_pairing(self, pairings):
+      score = 0
+      for parent1, parent2 in pairings:
+        dist = self.dist(parent1.tile, parent2.tile)
+        score += dist
+      return score
+
     def try_to_breed(self):
       eligible_dinos = [c for c in self.my_creatures() if self.eligible_to_breed(c)]
       if len(eligible_dinos) < 2:
-        print("Not enough healthy dinos to breed")
         return
       possible_pairings = self.all_possible_pairings(eligible_dinos)
 
       # TODO: some heurisitic for best pairings -- maybe distance, or health.
 
-      for dino1, dino2 in possible_pairings[0]:
+      best_pairing = min(possible_pairings, key=lambda p: self.score_pairing(p))
+      worst_pairing = max(possible_pairings, key=lambda p: self.score_pairing(p))
+
+      for dino1, dino2 in best_pairing:
         self.walk_towards_each_other(dino1, dino2)
         if self.dist(dino1.tile, dino2.tile) == 1:
           dino1.breed(dino2)
@@ -203,10 +212,8 @@ class AI(BaseAI):
         return
       for neighbor in creature.tile.get_neighbors():
         if neighbor.creature and neighbor.creature.owner != self.player:
-            print('lucky bite')
             creature.bite(neighbor)
         elif neighbor.plant and neighbor.plant.size > 1:
-            print('lucky snack')
             creature.bite(neighbor)
 
 
@@ -226,13 +233,13 @@ class AI(BaseAI):
         #   self.try_to_breed()
 
         desired_number_of_carnivores = math.floor(len(self.my_creatures())/3)
-        if desired_number_of_carnivores < 3:
+        if desired_number_of_carnivores < 5:
           desired_number_of_carnivores = 0
 
-        possible_attackers = [s for s in self.my_creatures() if s.current_health > s.max_health/2]
+        possible_attackers = [s for s in self.my_creatures()] # if s.current_health > s.max_health*.75]
 
         attackers = sorted(self.my_creatures(), key=lambda c: self.nearest_prey_dist(c))[:desired_number_of_carnivores]
-        print(f'Want {desired_number_of_carnivores} attackers. {len(self.my_creatures())-len(attackers)} Eaters, {len(attackers)} attackers')
+        print(f'{len(self.my_creatures())-len(attackers)} Eaters, {len(attackers)} attackers')
 
         for creature in self.my_creatures():
           if creature in attackers:
