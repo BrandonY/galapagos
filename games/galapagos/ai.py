@@ -1,6 +1,7 @@
 # This is where you build your AI for the Galapagos game.
 
 import sys
+import math
 
 from typing import List
 from joueur.base_ai import BaseAI
@@ -30,6 +31,12 @@ class AI(BaseAI):
         """
         return "The Beagles"
 
+    def nearest_prey_dist(self, my_creature):
+      nearest_prey = self.find_nearest_prey(my_creature)
+      if not nearest_prey or not nearest_prey.tile:
+        return 9999
+      return self.dist(my_creature.tile, nearest_prey.tile)
+
     def find_nearest_prey(self, my_creature):
         my_creatures = self.player.creatures
         opponent_creatures = []
@@ -51,9 +58,9 @@ class AI(BaseAI):
             curr_dist = possible_prey[prey][0]
             curr_health = possible_prey[prey][1]
             # bite the nearest creature that is also the weakest
-            # is_prey_better = (curr_dist < best_dist or (curr_dist == best_dist and curr_health < best_health))
+            is_prey_better = curr_dist < best_dist# or (curr_dist == best_dist and curr_health < best_health))
             # always go after the weakest creature, that is nearest
-            is_prey_better = (curr_health < best_health and curr_dist <= (best_dist*0.5))
+            #is_prey_better = (curr_health < best_health and curr_dist <= (best_dist*0.5))
             if is_prey_better:
                 best_dist = curr_dist
                 best_health = curr_health
@@ -82,6 +89,7 @@ class AI(BaseAI):
         """This is called once the game starts and your AI knows its player and game. You can initialize your AI here.
         """
         # replace with your start logic
+        self.carnivores = []
 
     def game_updated(self) -> None:
         """This is called every time the game's state updates, so if you are tracking anything you can update it here.
@@ -190,6 +198,17 @@ class AI(BaseAI):
       """Heuristic for whether we're pretty clearly healthier than the other team."""
       our_health
 
+    def opportunistic_biting(self, creature):
+      if not creature.can_bite:
+        return
+      for neighbor in creature.tile.get_neighbors():
+        if neighbor.creature and neighbor.creature.owner != self.player:
+            print('lucky bite')
+            creature.bite(neighbor)
+        elif neighbor.plant and neighbor.plant.size > 1:
+            print('lucky snack')
+            creature.bite(neighbor)
+
 
     def run_turn(self) -> bool:
         """This is called every time it is this AI.player's turn.
@@ -206,23 +225,22 @@ class AI(BaseAI):
         #     self.bite_prey(creature)
         #   self.try_to_breed()
 
-        herbivores = []
-        num_carnivores = 0
-        for creature in self.my_creatures():
-            if(creature.herbivorism < creature.carnivorism or creature.current_health <= 3):
-                herbivores.append(creature)
-            else:
-                num_carnivores += 1
-        print("I have " + str(herbivores.__len__()) + " herbivores and " + str(num_carnivores) + " carnivores")
-        
-        for creature in self.my_creatures():
-            if creature in herbivores or self.my_creatures().__len__() <= 2:
-                self.seek_plant(creature)
-            else:
-                self.bite_prey(creature)
-            self.try_to_breed()
+        desired_number_of_carnivores = math.floor(len(self.my_creatures())/3)
+        if desired_number_of_carnivores < 3:
+          desired_number_of_carnivores = 0
 
-        # Put your game logic here for runTurn
+        possible_attackers = [s for s in self.my_creatures() if s.current_health > s.max_health/2]
+
+        attackers = sorted(self.my_creatures(), key=lambda c: self.nearest_prey_dist(c))[:desired_number_of_carnivores]
+        print(f'Want {desired_number_of_carnivores} attackers. {len(self.my_creatures())-len(attackers)} Eaters, {len(attackers)} attackers')
+
+        for creature in self.my_creatures():
+          if creature in attackers:
+                self.bite_prey(creature)
+          else:
+                self.seek_plant(creature)
+                self.opportunistic_biting(creature)
+                self.try_to_breed()
         return True
 
 
